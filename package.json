@@ -1,0 +1,24 @@
+{
+  "name": "NodeRequestUpdatingFile",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "angular": "^1.6.4",
+    "archiver": "^1.3.0",
+    "body-parser": "^1.17.2",
+    "chokidar": "^1.7.0",
+    "cookie-parser": "^1.4.3",
+    "debug": "^2.6.8",
+    "express": "~4.13.1",
+    "jade": "^1.11.0",
+    "md5-file": "^3.1.1",
+    "morgan": "^1.8.2",
+    "rd": "^1.0.0",
+    "serve-favicon": "^2.4.3",
+    "watch": "^1.0.2",
+    "zip": "^1.2.0"
+  }
+}

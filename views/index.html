@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>启擎更新包版本信息</title>
+    <link rel="stylesheet" type="text/css" href="lib/angular-ui-grid/ui-grid.min.css">
+    <script src="lib/angular/angular.js"></script>
+    <script src="lib/angular-ui-grid/ui-grid.js"></script>
+    <script src="./App/main.js"></script>
+    <script src="./Controls/MainCtrl.js"></script>
+</head>
+
+<body ng-app="mainApp"  ng-controller="MainCtrl">
+<H1>启擎更新包信息</H1>
+<ui>
+    <li><a href="./download/启擎更新包自动下载器.exe">下载自动工具</a></li>
+    <li><a href="./download/启擎更新包下载器操作说明.docx">下载操作说明</a></li>
+</ui>
+<p></p>
+<div  ui-grid="gridOptions" ui-grid-pagination
+     ui-grid-pinning ui-grid-resize-columns  class="grid" ></div>
+</div>
+</body>
+</html>

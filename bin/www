@@ -1,0 +1,178 @@
+#!/usr/bin/env node
+
+/**
+ * Module dependencies.
+ */
+var app = require('../app');
+var debug = require('debug')('NodeRequestUpdatingFile:server');
+var http = require('http');
+var archiver = require('./../Utilitys/archiver');
+var UpdatingScriptConfig = require("./../Utilitys/UpdatingScriptConfig");
+var updatingFileOpManage = require("./../Utilitys/UpdatingFileOpManage");
+var fs = require("fs");
+var path = require("path");
+var chokidar = require('chokidar');
+var watch = require('watch')
+var filePackageFileOp = require("./../Utilitys/FilePackageOp");
+global.InitServiceConfig = require("./../Utilitys/InitServiceConfig").GetConfig();
+(function StartWWW() {
+    //清除工作目录
+    updatingFileOpManage.ClearWorkUrl();
+    var _updatingScriptConfig =  UpdatingScriptConfig.GetConfig();
+    _updatingScriptConfig.forEach(function(item) {
+        // fs.watch(item.UrlRoot, function (curr, prev,c,d) {
+        //     console.log("文件发生变化");
+        //     // updatingFileOpManage.getAllInstance().forEach(function(item){
+        //     //     item.Instance.RefreshFile(item.VersionKey);
+        //     //     console.log("刷新"+item.VersionKey + "的文件版本信息成功");
+        //     // });
+        // });
+        //var watchFileName = path.join(__dirname, "./Archivers/" + item.VersionKey + ".zip");
+        function watchModule(configItem) {
+            var  suffix =   path.extname(path.join(__dirname,configItem.UrlRoot));
+
+            if(/^[.a-zA-Z]+$/.test(suffix)  == false){
+
+                watch.watchTree(configItem.UrlRoot, function (f, curr, prev) {
+                    var inflag = false;
+                    if (typeof f == "object" && prev === null && curr === null) {
+
+                        inflag = true;
+                        // Finished walking the tree
+                    } else if (prev === null) {
+                        inflag = true;
+                        // f is a new file
+                    } else if (curr.nlink === 0) {
+                        inflag = true;
+                        // f was removed
+                    } else {
+                        inflag = true;
+                        // f was changed
+                    }
+                    if(inflag){
+                        console.log("监控到:" + configItem.UrlRoot + "发生文件变动!");
+                        filePackageFileOp.InWaitingGeneratePackage(configItem);
+                    }
+                });
+            }else{
+                // watch.walk(path.join(__dirname,configItem.UrlRoot), {interval:1000},function (f, curr, prev) {
+                //     console.log("监控到:" + configItem.UrlRoot + "发生文件变动!");
+                // });
+                watch.createMonitor(path.dirname(configItem.UrlRoot), function (monitor) {
+                    monitor.files[path.basename(configItem.UrlRoot)] // Stat object for my zshrc.
+                    monitor.on("created", function (f, stat) {
+                        console.log("监控到:" + configItem.UrlRoot + "发生文件变动!");
+                        filePackageFileOp.InWaitingGeneratePackage(configItem);
+                        // Handle new files
+                    })
+                    monitor.on("changed", function (f, curr, prev) {
+                        console.log("监控到:" + configItem.UrlRoot + "发生文件变动!");
+                        filePackageFileOp.InWaitingGeneratePackage(configItem);
+                        // Handle file changes
+                    })
+                    monitor.on("removed", function (f, stat) {
+
+                        // Handle removed files
+                        console.log("监控到:" + configItem.UrlRoot + "发生文件变动!");
+                        filePackageFileOp.InWaitingGeneratePackage(configItem);
+                    });
+                    console.log("监控到:" + configItem.UrlRoot + "发生文件变动!");
+                    filePackageFileOp.InWaitingGeneratePackage(configItem);
+                    //monitor.stop(); // Stop watching
+                })
+
+                // fs.watchFile(path.join(__dirname,configItem.UrlRoot), function (curr, prev,c,d) {
+                //     console.log("监控到:" + configItem.UrlRoot + "发生文件变动!");
+                //     filePackageFileOp.InWaitingGeneratePackage(configItem);
+                //     // updatingFileOpManage.getAllInstance().forEach(function(item){
+                //     //     item.Instance.RefreshFile(item.VersionKey);
+                //     //     console.log("刷新"+item.VersionKey + "的文件版本信息成功");
+                //     // });
+                // });
+            }
+        }
+        watchModule(item);
+    });
+
+
+    var port = normalizePort( global.InitServiceConfig.ServerPort || '8011' );
+    app.set('port', port);
+
+    /**
+     * Create HTTP server.
+     */
+
+    var server = http.createServer(app);
+
+    /**
+     * Listen on provided port, on all network interfaces.
+     */
+
+    server.listen(port);
+    server.on('error', onError);
+    server.on('listening', onListening);
+
+    /**
+     * Normalize a port into a number, string, or false.
+     */
+
+    function normalizePort(val) {
+        var port = parseInt(val, 10);
+
+        if (isNaN(port)) {
+            // named pipe
+            return val;
+        }
+
+        if (port >= 0) {
+            // port number
+            return port;
+        }
+
+        return false;
+    }
+
+    /**
+     * Event listener for HTTP server "error" event.
+     */
+
+    function onError(error) {
+        if (error.syscall !== 'listen') {
+            throw error;
+        }
+
+        var bind = typeof port === 'string'
+            ? 'Pipe ' + port
+            : 'Port ' + port;
+
+        // handle specific listen errors with friendly messages
+        switch (error.code) {
+            case 'EACCES':
+                console.error(bind + ' requires elevated privileges');
+                process.exit(1);
+                break;
+            case 'EADDRINUSE':
+                console.error(bind + ' is already in use');
+                process.exit(1);
+                break;
+            default:
+                throw error;
+        }
+    }
+
+    /**
+     * Event listener for HTTP server "listening" event.
+     */
+
+    function onListening() {
+        var addr = server.address();
+        var bind = typeof addr === 'string'
+            ? 'pipe ' + addr
+            : 'port ' + addr.port;
+        debug('Listening on ' + bind);
+        console.log("启动Web服务成功!");
+    }
+
+
+})();
+
